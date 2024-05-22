@@ -1,13 +1,3 @@
-## Hi there 👋
-Amass organization.
-
-<!--
-
-**Here are some ideas to get you started:**
-
-🙋‍♀️ A short introduction - what is your organization all about?
-🌈 Contribution guidelines - how can the community get involved?
-👩‍💻 Useful resources - where can the community find your docs? Is there anything else the community should know?
-🍿 Fun facts - what does your team eat for breakfast?
-🧙 Remember, you can do mighty things with the power of [Markdown](https://docs.github.com/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
--->
+‘Amass’라는 회사명은 '축적하다'라는 단어에서 유래합니다.
+고객과 회사에 유익한 가치와 경험을 축적하고 향상시킴을 목표로 하고자 하는 뜻을 회사명에 담았습니다.
+그 이념을 바탕으로 한 경제 활동으로 이로운 사회와 미래를 이끌어 가는 회사가 되겠습니다. 
