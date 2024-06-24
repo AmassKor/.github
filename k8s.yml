@@ -1,0 +1,43 @@
+---
+# deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${PRJT_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${PRJT_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${PRJT_NAME}
+    spec:
+      containers:
+      - name: ${PRJT_NAME}
+        image: ${ACR_LOGIN_SERVER}/${PRJT_NAME}:${IMAGE_TAG}
+        imagePullPolicy: Always
+        #resources:
+        #  requests:
+        #    memory: "768Mi"
+        ports:
+        - containerPort: 8000
+          name: ${PRJT_NAME}
+
+---
+# svc
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${PRJT_NAME}
+  labels:
+    app: ${PRJT_NAME}
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+  selector:
+    app: ${PRJT_NAME}
+---
