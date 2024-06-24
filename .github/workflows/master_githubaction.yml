@@ -1,0 +1,102 @@
+name: Build and deploy - master
+
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  PRJT_NAME: ${{ github.event.repository.name }}  # 수정하지 않으면 repo 이름으로 지정됨
+  SLACK_WEBHOOK_URL: ${{ vars.SLACK_WEBHOOK_URL }}
+  SLACK_CHANNEL_ID: 'C056WLF14V6'
+  STEP: ${{ github.base_ref }}
+
+jobs:
+  build_deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Send slack PR Notification'
+        run: |
+          STEP="Production"
+          curl -X POST --data-urlencode "payload={\"channel\": \"$SLACK_CHANNEL_ID\", \"username\": \"$PRJT_NAME - $STEP\", \"text\": \"PR 병합됨, 배포 시작\", \"icon_emoji\": \":api:\"}" $SLACK_WEBHOOK_URL
+
+
+      - name: '저장소 Checkout'
+        uses: actions/checkout@v3
+
+      - name: 'set environment variable'
+        run: |
+          echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+          echo "ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }}" >> $GITHUB_ENV
+          echo "PRJT_NAME=${{ env.PRJT_NAME }}" >> $GITHUB_ENV
+
+      - name: 'generate k8s manifest'
+        run: |
+           envsubst < k8s.yml > tmp-k8s.yml
+        shell: bash
+
+      - name: 'set up docker buildx'
+        uses: docker/setup-buildx-action@v2
+
+      - name: 'Container build and push image to ACR'
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: create and use docker buildx builder
+        run: |
+          docker buildx create --use
+
+      - name: build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.ACR_LOGIN_SERVER }}/$PRJT_NAME:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            STAGE=production
+
+      - name: 'Azure login'
+        uses: azure/login@v1.4.3
+        with: 
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 'Set AKS context'
+        uses: azure/aks-set-context@v3
+        with: 
+          cluster-name: ${{ secrets.CLUSTER_NAME }}
+          resource-group: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
+
+      - name: 'Setup kubectl'
+        uses: azure/setup-kubectl@v3
+
+      - name: 'Deploy to AKS'
+        uses: azure/k8s-deploy@v4
+        with:
+          namespace: 'default'
+          manifests: |
+            tmp-k8s.yml
+
+      - name: 'Send slack Notification'
+        if: success() || failure()
+        run: |
+          STATUS="완료"
+          EMOJI=":tada:"
+          COLOR="good"
+          if [ "${{ job.status }}" == "failure" ]; then
+            STATUS="실패"
+            EMOJI=":skull_and_crossbones:"
+            COLOR="danger"
+          fi
+          STEP="Production"
+          curl -X POST --data-urlencode "payload={\"channel\": \"$SLACK_CHANNEL_ID\", \"username\": \"$PRJT_NAME - $STEP\", \"attachments\": [{\"color\":\"$COLOR\", \"text\": \"*$STEP* 배포 *$STATUS! $EMOJI*\"}], \"icon_emoji\": \":api:\"}" $SLACK_WEBHOOK_URL
+
+
+
