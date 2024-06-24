@@ -65,12 +65,12 @@ jobs:
 
       - name: 'Azure login'
         uses: azure/login@v1.4.3
-        with: 
+        with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: 'Set AKS context'
         uses: azure/aks-set-context@v3
-        with: 
+        with:
           cluster-name: ${{ secrets.CLUSTER_NAME }}
           resource-group: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
 
@@ -97,6 +97,4 @@ jobs:
           fi
           STEP="Production"
           curl -X POST --data-urlencode "payload={\"channel\": \"$SLACK_CHANNEL_ID\", \"username\": \"$PRJT_NAME - $STEP\", \"attachments\": [{\"color\":\"$COLOR\", \"text\": \"*$STEP* 배포 *$STATUS! $EMOJI*\"}], \"icon_emoji\": \":api:\"}" $SLACK_WEBHOOK_URL
-
-
 

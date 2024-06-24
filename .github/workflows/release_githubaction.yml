@@ -1,4 +1,4 @@
-name: Build and deploy - release or staging 
+name: Build and deploy - release or staging
 
 on:
   pull_request:
@@ -121,4 +121,5 @@ jobs:
           if [ "${{ github.base_ref }}" == "develop" ]; then
             STEP="Staging"
           fi
-        curl -X POST --data-urlencode "payload={\"channel\": \"$SLACK_CHANNEL_ID\", \"username\": \"$PRJT_NAME - $STEP\", \"attachments\": [{\"color\":\"$COLOR\", \"text\": \"*$STEP* 배포 *$STATUS! $EMOJI*\"}], \"icon_emoji\": \":api:\"}" $SLACK_WEBHOOK_URL
+          curl -X POST --data-urlencode "payload={\"channel\": \"$SLACK_CHANNEL_ID\", \"username\": \"$PRJT_NAME - $STEP\", \"attachments\": [{\"color\":\"$COLOR\", \"text\": \"*$STEP* 배포 *$STATUS! $EMOJI*\"}], \"icon_emoji\": \":api:\"}" $SLACK_WEBHOOK_URL
+
