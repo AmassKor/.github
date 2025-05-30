@@ -5,7 +5,7 @@
 
 ## 🔍️ 해결하려는 문제가 무엇인가요?
 
--
+- https://amasskor.atlassian.net/browse/
 
 ## ✨ 핵심적으로 변경된 사항은 무엇일까요?
 
